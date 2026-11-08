@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rebobina</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235EE6D0' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M3 12a9 9 0 1 0 3-6.7'/%3E%3Cpath d='M3 4v5h5'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0A0D14; --panel:#121723; --panel2:#182030; --line:#253048; --line2:#36435F;
+  --ink:#EDF1F9; --ink2:#C3CADB; --muted:#96A0B5;
+  --acc:#5EE6D0; --acc-ink:#04221D; --acc-bg:#0E2725; --acc-line:#1F5F57;
+  --ok:#6FE3A5; --ok-bg:#0E2A1E; --bad:#FF7B72; --bad-bg:#2C1315; --bad-line:#6B2B2B; --warn:#FFC266; --warn-bg:#2B210E;
+  --font:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif; --mono:"Cascadia Mono",Consolas,ui-monospace,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F5F9; --panel:#FFFFFF; --panel2:#EEF1F6; --line:#DAE0EA; --line2:#C2CBD9;
+    --ink:#121722; --ink2:#323B4D; --muted:#5B6579;
+    --acc:#007A68; --acc-ink:#FFFFFF; --acc-bg:#E1F4F0; --acc-line:#8CCFC3;
+    --ok:#0F7A49; --ok-bg:#E2F5EC; --bad:#B42318; --bad-bg:#FDECEA; --bad-line:#F1B5AE; --warn:#8A5300; --warn-bg:#FFF3DE;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0D14; --panel:#121723; --panel2:#182030; --line:#253048; --line2:#36435F;
+  --ink:#EDF1F9; --ink2:#C3CADB; --muted:#96A0B5;
+  --acc:#5EE6D0; --acc-ink:#04221D; --acc-bg:#0E2725; --acc-line:#1F5F57;
+  --ok:#6FE3A5; --ok-bg:#0E2A1E; --bad:#FF7B72; --bad-bg:#2C1315; --bad-line:#6B2B2B; --warn:#FFC266; --warn-bg:#2B210E;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body{padding:20px}
+.app{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3,p{margin:0}
+h1{font-size:26px;font-weight:650;letter-spacing:-.01em;line-height:1.2}
+h2{font-size:18px;font-weight:650}
+h3{font-size:15px;font-weight:650}
+p{font-size:14px;line-height:1.5;color:var(--ink2)}
+small,.muted{font-size:13px;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+button,input{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+a{color:var(--acc)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:650;background:none;border:0;cursor:pointer;padding:4px}
+.marca svg{color:var(--acc)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.nav[aria-current="page"]{border-color:var(--acc);background:var(--acc-bg)}
+.cuenta{min-width:20px;padding:1px 7px;border-radius:999px;background:var(--panel2);font-size:12px;font-weight:600}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.card.acc{background:var(--acc-bg);border-color:var(--acc-line)}
+.card.bad{background:var(--bad-bg);border-color:var(--bad-line)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.btn{min-height:42px;padding:0 18px;border-radius:999px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad-line)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.03em;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--panel2);color:var(--muted)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.acc{background:var(--acc-bg);color:var(--acc)}
+.meter{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--acc)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:22px;font-weight:650}
+input.in{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);font-size:15px;width:100%}
+
+.lista{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;cursor:pointer;color:inherit}
+.item:first-child{border-top:0}
+.item:hover{background:var(--panel2)}
+.item .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.item .t b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .h{font-size:12px;color:var(--muted);white-space:nowrap}
+.item[aria-current="true"]{background:var(--acc-bg)}
+
+.tiempo{display:flex;flex-direction:column;gap:10px}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px}
+.marcas{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.vista{background:var(--panel2);border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:520px}
+.vista img{display:block;max-width:100%;margin:0 auto}
+.codigo{font-family:var(--mono);font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0;padding:14px}
+.dl{display:block;padding:0 14px;font-family:var(--mono);font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.dl.m{background:var(--bad-bg);color:var(--bad)}
+.dl.p{background:var(--ok-bg);color:var(--ok)}
+.dl.m::before{content:"− "}
+.dl.p::before{content:"+ "}
+.dl.e::before{content:"  "}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.leyenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.velo{position:fixed;inset:0;background:rgba(4,6,12,.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{max-width:480px;width:100%;padding:24px;border-radius:20px;background:var(--panel);border:1px solid var(--line2);display:flex;flex-direction:column;gap:16px}
+.modal .row{justify-content:flex-end}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:min(620px,calc(100% - 32px));padding:13px 18px;border-radius:14px;background:var(--panel2);border:1px solid var(--acc-line);font-size:14px;z-index:11}
+.vacio{padding:24px;text-align:center;color:var(--muted);font-size:14px}
+.grid-ver{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:18px}
+@media (max-width:820px){.grid-ver{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){body{padding:12px}h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button type="button" class="marca" data-go="#/"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Rebobina</button>
+    <nav aria-label="Secciones">
+      <button type="button" class="nav" data-go="#/" data-sec="inicio">Inicio</button>
+      <button type="button" class="nav" data-go="#/borrados" data-sec="borrados">Borrados <span class="cuenta" id="nb">0</span></button>
+      <button type="button" class="nav" data-go="#/ajustes" data-sec="ajustes">Ajustes</button>
+    </nav>
+  </header>
+  <main id="vista" style="display:flex;flex-direction:column;gap:18px;width:100%"></main>
+</div>
+<div id="capa"></div>
+
+<script>
+"use strict";
+const TOKEN = new URLSearchParams(location.search).get("t");
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const enc = encodeURIComponent;
+const S = {inicio:null, sel:{}, verDiff:true, soloCambios:false};
+
+function api(metodo, ...args){
+  if(window.pywebview && window.pywebview.api) return window.pywebview.api[metodo](...args);
+  return fetch("/api/" + metodo, {method:"POST", headers:{"Content-Type":"application/json","X-Token":TOKEN||""}, body:JSON.stringify(args)})
+    .then(r => { if(!r.ok) throw new Error("Rebobina no respondió"); return r.json(); });
+}
+
+/* ------------------------------------------------------------ utilidades */
+function hace(ts){
+  const s = Date.now()/1000 - ts;
+  if(s < 60) return "hace un momento";
+  if(s < 3600) return `hace ${Math.round(s/60)} min`;
+  if(s < 86400) return `hace ${Math.round(s/3600)} h`;
+  const d = Math.round(s/86400);
+  return d === 1 ? "ayer" : `hace ${d} días`;
+}
+function fecha(ts){
+  const d = new Date(ts*1000);
+  return d.toLocaleDateString("es", {weekday:"short", day:"numeric", month:"short", year:"numeric"}) + ", " + d.toLocaleTimeString("es", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+}
+function fechaCorta(ts){ const d = new Date(ts*1000); return d.toLocaleDateString("es", {day:"numeric", month:"short"}) + ", " + d.toLocaleTimeString("es", {hour:"2-digit", minute:"2-digit"}); }
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+function hora(ts){ return new Date(ts*1000).toLocaleTimeString("es", {hour:"2-digit", minute:"2-digit"}); }
+const EVENTOS = {creado:["NUEVO","acc"], modificado:["CAMBIO",""], borrado:["BORRADO","bad"], inicial:["PRIMERA COPIA",""], restaurado:["RESTAURADO","ok"], "antes de restaurar":["ANTES DE RESTAURAR","warn"]};
+const evento = e => { const [t,c] = EVENTOS[e] || [String(e).toUpperCase(), ""]; return `<span class="pill ${c}">${esc(t)}</span>`; };
+const ESTADOS = {"igual":["IGUAL QUE AHORA","ok"], "cambió después":["CAMBIÓ DESPUÉS","warn"], "borrado después":["BORRADO DESPUÉS","bad"]};
+function param(n){ const q = (location.hash.split("?")[1]) || ""; return new URLSearchParams(q).get(n); }
+function toast(t){ if(!t) return; let el = document.querySelector(".toast"); if(!el){ el = document.createElement("div"); el.className = "toast"; el.setAttribute("role","status"); document.body.appendChild(el); } el.textContent = t; clearTimeout(toast.k); toast.k = setTimeout(() => el.remove(), 6000); }
+function confirmar(titulo, texto, si="Continuar"){
+  return new Promise(ok => {
+    const previo = document.activeElement;
+    $("capa").innerHTML = `<div class="velo"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt">${esc(titulo)}</h2><p>${esc(texto)}</p>
+      <div class="row"><button type="button" class="btn" id="mno">Cancelar</button><button type="button" class="btn primary" id="msi">${esc(si)}</button></div></div></div>`;
+    const cerrar = v => { $("capa").innerHTML = ""; document.removeEventListener("keydown", tecla); if(previo) previo.focus(); ok(v); };
+    const tecla = e => { if(e.key === "Escape") cerrar(false); };
+    document.addEventListener("keydown", tecla);
+    $("mno").onclick = () => cerrar(false); $("msi").onclick = () => cerrar(true); $("msi").focus();
+  });
+}
+function filaArchivo(v, extra=""){
+  return `<button type="button" class="item" data-go="#/ver?r=${enc(v.ruta)}"><span class="t"><b>${esc(v.nombre)}</b><span>${esc(v.carpeta)}</span></span>${extra}${evento(v.evento)}<span class="h">${esc(hace(v.fecha))}</span></button>`;
+}
+
+/* ------------------------------------------------------------ vistas */
+const V = {};
+
+V.inicio = async () => {
+  const e = await api("estado");
+  $("nb").textContent = e.borrados;
+  let alerta = "";
+  if(e.alerta){
+    const d = e.alerta.detalle;
+    const momento = d.desde - 1;
+    alerta = `<section class="card bad" aria-label="Alerta"><span class="kicker" style="color:var(--bad)">Cambios masivos</span>
+      <h2>Cambiaron ${d.archivos} archivos en menos de un minuto, a las ${hora(d.desde)}</h2>
+      <p>Si no fuiste tú, puede ser un virus que cifra archivos. Rebobina dejó de borrar versiones antiguas hasta que lo revises.</p>
+      <div class="row">${e.carpetas.map(c => `<button type="button" class="btn primary" data-go="#/carpeta?r=${enc(c.ruta)}&t=${momento}">Ver ${esc(c.nombre)} antes de las ${hora(d.desde)}</button>`).join("")}
+      <button type="button" class="btn" data-act="descartar">Fui yo, descartar</button></div></section>`;
+  }
+  const esp = e.espacio;
+  return `${alerta}
+  <section class="card acc"><div class="row between"><div><span class="kicker">Tus archivos tienen memoria</span><h1>Recupera cualquier versión, de cualquier momento</h1></div>
+    <span class="pill ${e.servicio?"ok":"bad"}">${e.servicio?"VIGILANDO":"DETENIDA"}</span></div>
+    ${e.servicio?"":`<div class="row"><p>La vigilancia no está funcionando: los cambios nuevos no se guardan.</p><button type="button" class="btn sm primary" data-act="servicio">Iniciar vigilancia</button></div>`}
+    <div class="stats">
+      <div class="stat"><small>Carpetas vigiladas</small><b>${e.carpetas.length}</b></div>
+      <div class="stat"><small>Archivos con historial</small><b>${esp.archivos.toLocaleString("es")}</b></div>
+      <div class="stat"><small>Versiones guardadas</small><b>${esp.versiones.toLocaleString("es")}</b></div>
+      <div class="stat"><small>Espacio usado</small><b>${esc(esp.ocupado_txt)}</b><small>de ${esc(esp.limite_txt)}</small></div>
+    </div>
+    <div class="meter" role="img" aria-label="Espacio usado: ${esp.porcentaje} por ciento del límite"><i style="width:${Math.min(100, esp.porcentaje)}%"></i></div>
+  </section>
+  <label class="sr" for="q">Buscar un archivo</label>
+  <input class="in" id="q" type="search" placeholder="Busca un archivo por su nombre, aunque ya no exista" autocomplete="off">
+  <div id="res"></div>
+  <div class="grid2">
+    <section class="card"><h2>Carpetas vigiladas</h2>
+      ${e.carpetas.length ? `<div class="lista">${e.carpetas.map(c => `<button type="button" class="item" data-go="#/carpeta?r=${enc(c.ruta)}"><span class="t"><b>${esc(c.nombre)}</b><span>${esc(c.ruta)}</span></span>${c.existe?"":`<span class="pill bad">NO EXISTE</span>`}<span class="btn sm">Ver en el tiempo</span></button>`).join("")}</div>`
+        : `<div class="vacio">No vigilas ninguna carpeta. <a href="#/ajustes">Añade una en Ajustes</a>.</div>`}
+      <small>También puedes hacer clic derecho en cualquier archivo o carpeta › «Ver en el tiempo» (en Windows 11, dentro de «Mostrar más opciones»).</small>
+    </section>
+    <section class="card"><h2>Cambios recientes</h2>
+      ${e.recientes.length ? `<div class="lista">${e.recientes.map(v => filaArchivo(v)).join("")}</div>` : `<div class="vacio">Aún no hay cambios. Cuando guardes un archivo en una carpeta vigilada, aparecerá aquí.</div>`}
+    </section>
+  </div>`;
+};
+
+V.ver = async () => {
+  const ruta = param("r");
+  const d = await api("versiones", ruta);
+  if(d.es_carpeta){ location.replace("#/carpeta?r=" + enc(ruta)); return null; }
+  const vs = [...d.versiones].reverse(); // de la más antigua a la más reciente
+  const cab = `<div class="row between"><div style="min-width:0"><span class="kicker">Ver en el tiempo</span><h1 style="overflow-wrap:anywhere">${esc(d.nombre)}</h1><small class="mono" style="overflow-wrap:anywhere">${esc(d.ruta)}</small></div>
+    <button type="button" class="btn sm" data-act="ubicacion" data-ruta="${esc(d.ruta)}">Abrir ubicación</button></div>`;
+  if(!vs.length){
+    return `${cab}<section class="card"><h2>Rebobina aún no tiene versiones de este archivo</h2>
+      <p>${d.vigilada ? "Se guardará una versión la próxima vez que cambie." : "Este archivo no está en una carpeta vigilada. Añade su carpeta en Ajustes para empezar a guardar su historial."}</p>
+      ${d.vigilada ? "" : `<button type="button" class="btn primary" data-go="#/ajustes">Ir a Ajustes</button>`}</section>`;
+  }
+  let i = S.sel[ruta]; if(i === undefined || i >= vs.length) i = vs.length - 1;
+  if(vs[i].evento === "borrado"){ const j = vs.slice(0, i).map(v => v.hash).lastIndexOf(true); if(j >= 0) i = j; }
+  S.sel[ruta] = i;
+  const v = vs[i];
+  const vista = v.hash ? await api("vista", v.id) : {tipo:"borrado"};
+  let prev = "";
+  if(vista.tipo === "imagen") prev = `<img src="${vista.data}" alt="Vista de la versión del ${esc(fecha(v.fecha))}">`;
+  else if(vista.tipo === "texto"){
+    if(vista.igual) prev = `<p style="padding:12px 14px 0">Esta versión es idéntica al archivo actual.</p><pre class="codigo">${esc(vista.texto)}</pre>`;
+    else if(vista.cambios && S.verDiff) prev = vista.cambios.map(c => `<span class="dl ${c.t==="-"?"m":c.t==="+"?"p":"e"}">${esc(c.l) || " "}</span>`).join("");
+    else prev = `<pre class="codigo">${esc(vista.texto)}</pre>`;
+  }
+  else if(vista.tipo === "otro") prev = `<div class="vacio">No se puede mostrar una vista previa de este tipo de archivo (${esc(vista.tamano)}). Puedes guardar una copia para abrirla.</div>`;
+  else prev = `<div class="vacio">Aquí el archivo se borró.</div>`;
+  const ext = vista.tipo === "texto" && vista.cambios;
+  const lista = d.versiones.map(x => `<button type="button" class="item" data-idx="${vs.indexOf(x)}" aria-current="${x === v}"><span class="t"><b>${esc(fechaCorta(x.fecha))}</b><span>${esc(hace(x.fecha))}${x.tamano_txt ? " · " + esc(x.tamano_txt) : ""}</span></span>${x.es_actual?`<span class="pill acc">ACTUAL</span>`:""}${evento(x.evento)}</button>`).join("");
+  return `${cab}
+  ${d.existe ? "" : `<section class="card bad"><p><b>Este archivo ya no existe.</b> Elige una versión y pulsa «Restaurar» para recuperarlo en su sitio.</p></section>`}
+  <section class="card"><div class="tiempo">
+    <div class="row between"><h2>${esc(fecha(v.fecha))}</h2><div class="row">${v.es_actual?`<span class="pill acc">VERSIÓN ACTUAL</span>`:""}${evento(v.evento)}</div></div>
+    <label class="sr" for="barra">Momento</label>
+    <input type="range" id="barra" min="0" max="${vs.length-1}" value="${i}" step="1" aria-valuetext="${esc(fecha(v.fecha))}">
+    <div class="marcas"><span>${esc(fecha(vs[0].fecha))}</span><span>${vs.length} versiones</span><span>${esc(hace(vs[vs.length-1].fecha))}</span></div>
+    <div class="row"><button type="button" class="btn sm" data-paso="-1" ${i===0?"disabled":""}>← Anterior</button><button type="button" class="btn sm" data-paso="1" ${i===vs.length-1?"disabled":""}>Siguiente →</button>
+      <span class="muted">${esc(hace(v.fecha))}${v.tamano_txt?" · "+esc(v.tamano_txt):""}</span></div>
+  </div></section>
+  <div class="grid-ver">
+    <section class="card"><div class="row between"><h2>Vista previa</h2>
+      ${vista.tipo==="texto" && vista.cambios ? `<button type="button" class="btn sm" data-act="diff">${S.verDiff?"Ver texto completo":"Ver diferencias con el actual"}</button>` : ""}</div>
+      ${ext && S.verDiff ? `<div class="leyenda"><span><i style="background:var(--bad)"></i>Solo en esta versión</span><span><i style="background:var(--ok)"></i>Solo en el archivo actual</span></div>` : ""}
+      <div class="vista">${prev}</div>
+      <div class="row"><button type="button" class="btn primary" data-act="restaurar" data-id="${v.id}" ${v.es_actual||!v.hash?"disabled":""}>Restaurar esta versión</button>
+        <button type="button" class="btn" data-act="copia" data-id="${v.id}" ${v.hash?"":"disabled"}>Guardar una copia</button></div>
+      <small>Restaurar es reversible: la versión que tienes ahora se guarda antes.</small>
+    </section>
+    <section class="card"><h2>Todas las versiones</h2><div class="lista" style="max-height:560px;overflow:auto">${lista}</div></section>
+  </div>`;
+};
+
+V.carpeta = async () => {
+  const ruta = param("r");
+  const momentos = await api("momentos", ruta);
+  const nombre = ruta.split(/[\\/]/).filter(Boolean).pop() || ruta;
+  const cab = `<div class="row between"><div style="min-width:0"><span class="kicker">Carpeta en el tiempo</span><h1>${esc(nombre)}</h1><small class="mono" style="overflow-wrap:anywhere">${esc(ruta)}</small></div>
+    <button type="button" class="btn sm" data-act="ubicacion" data-ruta="${esc(ruta)}">Abrir carpeta</button></div>`;
+  if(!momentos.length) return `${cab}<section class="card"><h2>Aún no hay historial de esta carpeta</h2><p>Si no está vigilada, añádela en Ajustes.</p><button type="button" class="btn primary" data-go="#/ajustes">Ir a Ajustes</button></section>`;
+  const t = param("t");
+  let i = momentos.length - 1;
+  if(t){ const k = momentos.map(m => m <= +t).lastIndexOf(true); i = k >= 0 ? k : 0; }
+  const m = momentos[i];
+  const filas = await api("carpeta_en", ruta, m);
+  const n = {igual:0, "cambió después":0, "borrado después":0}; filas.forEach(f => n[f.estado]++);
+  const vis = S.soloCambios ? filas.filter(f => f.estado !== "igual") : filas;
+  const cambios = n["cambió después"] + n["borrado después"];
+  return `${cab}
+  <section class="card"><div class="tiempo">
+    <div class="row between"><h2>Así estaba el ${esc(fecha(m))}</h2><span class="muted">${esc(hace(m))}</span></div>
+    <label class="sr" for="barra-c">Momento</label>
+    <input type="range" id="barra-c" min="0" max="${momentos.length-1}" value="${i}" step="1" aria-valuetext="${esc(fecha(m))}">
+    <div class="marcas"><span>${esc(fecha(momentos[0]))}</span><span>${momentos.length} momentos con cambios</span><span>ahora</span></div>
+  </div></section>
+  <section class="card">
+    <div class="row between"><div class="row"><span class="pill ok">${n.igual} IGUALES</span><span class="pill warn">${n["cambió después"]} CAMBIARON</span><span class="pill bad">${n["borrado después"]} BORRADOS</span></div>
+      <button type="button" class="btn sm" data-act="solo" aria-pressed="${S.soloCambios}">${S.soloCambios?"Mostrar todo":"Solo lo que cambió"}</button></div>
+    <div class="lista" style="max-height:520px;overflow:auto">${vis.length ? vis.map(f => `<button type="button" class="item" data-go="#/ver?r=${enc(f.ruta)}"><span class="t"><b>${esc(f.relativa)}</b><span>${esc(f.tamano_txt)} · guardado ${esc(hace(f.fecha))}</span></span><span class="pill ${ESTADOS[f.estado][1]}">${ESTADOS[f.estado][0]}</span></button>`).join("") : `<div class="vacio">Nada cambió desde este momento.</div>`}</div>
+    <div class="row"><button type="button" class="btn primary" data-act="restaurar-carpeta" data-r="${esc(ruta)}" data-m="${m}" ${cambios?"":"disabled"}>Restaurar la carpeta a este momento</button>
+      <small>Revierte ${plural(n["cambió después"], "archivo", "archivos")} y recupera ${plural(n["borrado después"], "borrado", "borrados")}. No borra los archivos creados después; lo que había se guarda antes.</small></div>
+  </section>`;
+};
+
+V.borrados = async () => {
+  const b = await api("borrados");
+  $("nb").textContent = b.length;
+  return `<div><span class="kicker">Archivos borrados</span><h1>Lo que ya no está en tus carpetas</h1><p>Aunque hayas vaciado la Papelera, aquí sigue la última versión de cada archivo borrado.</p></div>
+  <section class="card">${b.length ? `<div class="lista">${b.map(v => `<div class="item" style="cursor:default"><span class="t"><b>${esc(v.nombre)}</b><span>${esc(v.carpeta)} · borrado ${esc(hace(v.borrado_en))}</span></span>
+      <button type="button" class="btn sm" data-go="#/ver?r=${enc(v.ruta)}">Versiones</button><button type="button" class="btn sm primary" data-act="restaurar" data-id="${v.id}">Restaurar</button></div>`).join("")}</div>`
+    : `<div class="vacio">No hay archivos borrados en las carpetas vigiladas.</div>`}</section>`;
+};
+
+V.ajustes = async () => {
+  const a = await api("ajustes");
+  S.ajustes = a;
+  const win = S.inicio && S.inicio.es_windows;
+  return `<div><span class="kicker">Ajustes</span><h1>Qué vigila Rebobina y cuánto guarda</h1></div>
+  <section class="card"><h2>Carpetas vigiladas</h2>
+    <div class="lista">${a.carpetas.map((c,i) => `<div class="item" style="cursor:default"><span class="t"><b>${esc(c)}</b></span><button type="button" class="btn sm danger" data-quitar="${i}">Quitar</button></div>`).join("") || `<div class="vacio">Ninguna.</div>`}</div>
+    <div class="row"><label class="sr" for="nueva">Ruta de una carpeta</label><input class="in" id="nueva" placeholder="C:\\Users\\tu-usuario\\Proyectos" style="flex:1;min-width:220px">
+      ${window.pywebview?`<button type="button" class="btn" data-act="elegir">Elegir…</button>`:""}<button type="button" class="btn primary" data-act="anadir">Añadir</button></div>
+    <small>Al quitar una carpeta, sus versiones guardadas no se borran.</small>
+  </section>
+  <section class="card"><h2>Espacio y límites</h2>
+    <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Espacio máximo (GB)<input class="in" id="limite" type="number" min="1" step="1" value="${a.limite_gb}"><small>Al llegar, se borran las versiones más antiguas.</small></label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Tamaño máximo por archivo (MB)<input class="in" id="maxmb" type="number" min="1" step="1" value="${a.max_mb}"><small>Los archivos más grandes no se guardan.</small></label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Alerta de cambios masivos<input class="in" id="umbral" type="number" min="5" step="1" value="${a.umbral_masivo}"><small>Archivos cambiados en un minuto.</small></label>
+    </div>
+  </section>
+  ${win?`<section class="card"><h2>Integración con Windows</h2>
+    <label class="row" style="font-size:14px"><input type="checkbox" id="menu" ${a.menu_contextual?"checked":""}> «Ver en el tiempo» en el menú del clic derecho</label>
+    <label class="row" style="font-size:14px"><input type="checkbox" id="auto" ${a.inicio_automatico?"checked":""}> Vigilar al iniciar Windows</label></section>`:""}
+  <div class="row"><button type="button" class="btn primary" data-act="guardar-ajustes">Guardar ajustes</button></div>`;
+};
+
+/* ------------------------------------------------------------ enrutado */
+async function render(){
+  const h = location.hash || "#/";
+  const sec = h.replace(/^#\//, "").split("?")[0] || "inicio";
+  document.querySelectorAll("[data-sec]").forEach(b => b.setAttribute("aria-current", b.dataset.sec === sec ? "page" : "false"));
+  const f = V[sec] || V.inicio;
+  try{
+    const html = await f();
+    if(html !== null) $("vista").innerHTML = html;
+  }catch(e){
+    $("vista").innerHTML = `<section class="card bad"><h2>Algo salió mal</h2><p>${esc(e.message || e)}</p></section>`;
+  }
+  if(sec === "inicio") prepararBusqueda();
+}
+function prepararBusqueda(){
+  const q = $("q"); if(!q) return;
+  let k;
+  q.addEventListener("input", () => { clearTimeout(k); k = setTimeout(async () => {
+    const r = await api("buscar", q.value.trim());
+    $("res").innerHTML = q.value.trim().length < 2 ? "" : `<section class="card"><h2>Resultados</h2>${r.length ? `<div class="lista">${r.map(v => filaArchivo(v)).join("")}</div>` : `<div class="vacio">No hay archivos con ese nombre en el historial.</div>`}</section>`;
+  }, 250); });
+}
+window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
+
+/* ------------------------------------------------------------ eventos */
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button,[data-go]"); if(!b || b.disabled) return;
+  if(b.dataset.go){ location.hash = b.dataset.go; return; }
+  const ruta = param("r");
+  if(b.dataset.idx !== undefined){ S.sel[ruta] = +b.dataset.idx; return render(); }
+  if(b.dataset.paso){ S.sel[ruta] = (S.sel[ruta] ?? 0) + +b.dataset.paso; return render(); }
+  const act = b.dataset.act;
+  if(act === "diff"){ S.verDiff = !S.verDiff; return render(); }
+  if(act === "solo"){ S.soloCambios = !S.soloCambios; return render(); }
+  if(act === "ubicacion"){ api("abrir_ubicacion", b.dataset.ruta); return; }
+  if(act === "servicio"){ b.disabled = true; const ok = await api("iniciar_servicio"); toast(ok ? "Vigilancia iniciada." : "No se pudo iniciar la vigilancia."); return render(); }
+  if(act === "descartar"){ await api("descartar_alerta"); toast("Alerta descartada. Rebobina vuelve a limpiar versiones antiguas con normalidad."); return render(); }
+  if(act === "restaurar"){
+    if(!(await confirmar("¿Restaurar esta versión?", "El archivo volverá a como estaba en ese momento. La versión que tienes ahora se guardará antes, así que podrás volver a ella.", "Restaurar"))) return;
+    const r = await api("restaurar", +b.dataset.id); toast(r.mensaje); if(ruta) S.sel[ruta] = undefined; return render();
+  }
+  if(act === "copia"){ const r = await api("copia", +b.dataset.id); toast(r.mensaje); return; }
+  if(act === "restaurar-carpeta"){
+    if(!(await confirmar("¿Restaurar la carpeta?", "Los archivos que cambiaron o se borraron volverán a como estaban en ese momento. Los archivos creados después no se tocan, y lo que hay ahora se guarda antes.", "Restaurar carpeta"))) return;
+    b.disabled = true; const r = await api("restaurar_carpeta", b.dataset.r, +b.dataset.m); toast(r.mensaje); return render();
+  }
+  if(act === "elegir"){ const c = await api("elegir_carpeta"); if(c) $("nueva").value = c; return; }
+  if(act === "anadir"){ const c = $("nueva").value.trim(); if(!c) return; const r = await api("guardar_ajustes", {carpetas: [...S.ajustes.carpetas, c]}); const a = await api("ajustes"); toast(a.carpetas.length > S.ajustes.carpetas.length ? "Carpeta añadida. Rebobina empezará a vigilarla en unos segundos." : "Esa carpeta no existe."); return render(); }
+  if(b.dataset.quitar !== undefined){ const c = S.ajustes.carpetas.filter((_, i) => i !== +b.dataset.quitar); const r = await api("guardar_ajustes", {carpetas: c}); toast(r.mensaje); return render(); }
+  if(act === "guardar-ajustes"){
+    const d = {limite_gb: Math.max(1, +$("limite").value || 10), max_mb: Math.max(1, +$("maxmb").value || 200), umbral_masivo: Math.max(5, +$("umbral").value || 40)};
+    if($("menu")) d.menu_contextual = $("menu").checked;
+    if($("auto")) d.inicio_automatico = $("auto").checked;
+    const r = await api("guardar_ajustes", d); toast(r.mensaje); return render();
+  }
+});
+document.addEventListener("input", e => {
+  if(e.target.id === "barra"){ S.sel[param("r")] = +e.target.value; clearTimeout(S.kb); S.kb = setTimeout(render, 120); }
+});
+document.addEventListener("change", async e => {
+  if(e.target.id === "barra-c"){ const ms = await api("momentos", param("r")); location.hash = `#/carpeta?r=${enc(param("r"))}&t=${ms[+e.target.value]}`; }
+});
+
+/* ------------------------------------------------------------ inicio */
+let iniciado = false;
+async function iniciar(){
+  if(iniciado) return; iniciado = true;
+  try{ S.inicio = await api("inicio"); }catch(e){ S.inicio = {}; }
+  if(S.inicio.ruta && !location.hash.includes("?r=")) location.replace("#/ver?r=" + enc(S.inicio.ruta));
+  render();
+  setInterval(() => { const sec = (location.hash || "#/").replace(/^#\//, "").split("?")[0] || "inicio"; if(sec === "inicio" && !document.activeElement.matches("input")) render(); }, 15000);
+}
+if(window.pywebview && window.pywebview.api) iniciar();
+window.addEventListener("pywebviewready", iniciar);
+if(TOKEN) iniciar();
+</script>
+</body>
+</html>
