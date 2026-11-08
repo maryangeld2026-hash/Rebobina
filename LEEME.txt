@@ -1,0 +1,24 @@
+REBOBINA - versiones de cada archivo
+====================================
+
+CÓMO EMPEZAR
+1. Deja esta carpeta en un sitio fijo (por ejemplo Documentos\Programas\Rebobina).
+2. Abre Rebobina.exe.
+   La primera vez empieza a vigilar Documentos y Escritorio, añade "Ver en el tiempo"
+   al clic derecho (en Windows 11: "Mostrar más opciones") y arranca sola con Windows.
+
+Si mueves la carpeta, vuelve a abrir Rebobina.exe para que el clic derecho apunte al nuevo sitio.
+
+SI WINDOWS LO BLOQUEA
+- SmartScreen ("Windows protegió su PC"): Más información > Ejecutar de todas formas.
+- Si Microsoft Defender lo borra: Seguridad de Windows > Protección contra virus y amenazas >
+  Historial de protección > elige la entrada > Acciones > Restaurar.
+  Para que no vuelva a pasar, añade esta carpeta en Administrar la configuración > Exclusiones.
+  Es un falso positivo habitual en programas sin firma digital.
+
+QUITARLO
+- Abre una terminal en esta carpeta y ejecuta:  Rebobina.exe --desinstalar
+  (quita el clic derecho y el inicio automático).
+- Después borra esta carpeta. Las versiones guardadas están en %LOCALAPPDATA%\Rebobina.
+
+Rebobina NO es una copia de seguridad: las versiones están en el mismo disco.

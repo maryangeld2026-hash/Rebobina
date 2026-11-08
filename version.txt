@@ -1,0 +1,19 @@
+# Datos que Windows muestra en Propiedades › Detalles del .exe (formato de PyInstaller).
+VSVersionInfo(
+  ffi=FixedFileInfo(filevers=(1, 0, 0, 0), prodvers=(1, 0, 0, 0), mask=0x3f, flags=0x0, OS=0x40004,
+                    fileType=0x1, subtype=0x0, date=(0, 0)),
+  kids=[
+    StringFileInfo([
+      StringTable('0C0A04B0', [
+        StringStruct('CompanyName', 'Rebobina'),
+        StringStruct('FileDescription', 'Rebobina - versiones de cada archivo'),
+        StringStruct('FileVersion', '1.0.0'),
+        StringStruct('InternalName', 'Rebobina'),
+        StringStruct('LegalCopyright', 'Rebobina'),
+        StringStruct('OriginalFilename', 'Rebobina.exe'),
+        StringStruct('ProductName', 'Rebobina'),
+        StringStruct('ProductVersion', '1.0.0')])
+    ]),
+    VarFileInfo([VarStruct('Translation', [3082, 1200])])
+  ]
+)

@@ -24,8 +24,15 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt pyinstaller
+          python -m pip install --upgrade pip wheel
+          pip install -r requirements.txt
+
+      # El cargador que trae PyInstaller ya hecho lo comparten miles de programas (algunos maliciosos),
+      # y por eso los antivirus lo marcan. Compilarlo aquí da uno propio y reduce los falsos positivos.
+      - name: Instalar PyInstaller con un cargador compilado aquí
+        env:
+          PYINSTALLER_COMPILE_BOOTLOADER: "1"
+        run: pip install --no-binary pyinstaller pyinstaller
 
       - name: Probar el motor y el servicio en Windows
         run: python pruebas/prueba_motor.py
@@ -33,41 +40,54 @@ jobs:
       - name: Probar el menú del clic derecho y el inicio automático
         run: python pruebas/prueba_windows.py
 
-      - name: Crear Rebobina.exe
+      # Versión en carpeta (no un solo .exe): los antivirus la marcan mucho menos,
+      # porque no se descomprime en una carpeta temporal al abrirse.
+      - name: Crear la carpeta Rebobina
         run: >
-          pyinstaller --noconfirm --clean --onefile --windowed
-          --name Rebobina --icon icono.ico
+          pyinstaller --noconfirm --clean --onedir --windowed --noupx
+          --name Rebobina --icon icono.ico --version-file version.txt
           --add-data "ui;ui"
           --collect-submodules watchdog
           app.py
 
-      - name: Probar que el .exe arranca y responde
+      - name: Probar que el programa arranca y responde
         shell: pwsh
         run: |
           $env:REBOBINA_DATOS = "$env:RUNNER_TEMP\rebobina-prueba"
-          $p = Start-Process -FilePath dist\Rebobina.exe -ArgumentList "--navegador","--sin-abrir","--sin-servicio","--puerto=47300" -PassThru
-          Start-Sleep -Seconds 12
+          $p = Start-Process -FilePath dist\Rebobina\Rebobina.exe -ArgumentList "--navegador","--sin-abrir","--sin-servicio","--puerto=47300" -PassThru
+          Start-Sleep -Seconds 10
           $r = Invoke-WebRequest -Uri "http://127.0.0.1:47300/" -UseBasicParsing
-          if ($r.Content -notmatch "Rebobina") { throw "El .exe no sirvió la interfaz" }
-          Write-Host "El .exe arrancó y sirvió la interfaz ($($r.Content.Length) bytes)."
+          if ($r.Content -notmatch "Rebobina") { throw "El programa no sirvió la interfaz" }
+          Write-Host "El programa arrancó y sirvió la interfaz ($($r.Content.Length) bytes)."
           Stop-Process -Id $p.Id -Force
+          (Get-Item dist\Rebobina\Rebobina.exe).VersionInfo | Format-List FileDescription, ProductName, FileVersion
+
+      - name: Comprimir
+        shell: pwsh
+        run: |
+          Copy-Item LEEME.txt dist\Rebobina\LEEME.txt
+          Compress-Archive -Path dist\Rebobina -DestinationPath Rebobina-windows.zip
+          Get-Item Rebobina-windows.zip | Format-List Name, Length
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Rebobina
-          path: dist/Rebobina.exe
+          name: Rebobina-windows
+          path: Rebobina-windows.zip
 
       - name: Publicar versión
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Rebobina v1.0.${{ github.run_number }}
+          tag_name: v1.1.${{ github.run_number }}
+          name: Rebobina v1.1.${{ github.run_number }}
           make_latest: true
-          files: dist/Rebobina.exe
+          files: Rebobina-windows.zip
           body: |
-            Rebobina para Windows 10 y 11.
+            Rebobina para Windows 10 y 11, en una carpeta comprimida.
 
-            **Cómo empezar:** descarga `Rebobina.exe`, guárdalo donde quieras (por ejemplo en Documentos) y ábrelo.
-            Empieza a vigilar Documentos y Escritorio, añade «Ver en el tiempo» al clic derecho y arranca sola al iniciar Windows.
+            **Cómo empezar:**
+            1. Descarga `Rebobina-windows.zip`.
+            2. Clic derecho › **Extraer todo** y elige una carpeta fija, por ejemplo `Documentos\Programas`.
+            3. Abre `Rebobina\Rebobina.exe`.
 
+            No muevas la carpeta después: el menú del clic derecho apunta a ella (si la mueves, vuelve a abrir Rebobina.exe).
             Windows SmartScreen puede avisar porque el programa no está firmado: elige «Más información › Ejecutar de todas formas».

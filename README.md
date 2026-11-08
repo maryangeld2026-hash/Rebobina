@@ -10,14 +10,16 @@
 
 ## Instalar
 
-1. Descarga `Rebobina.exe` desde [la última versión](../../releases/latest).
-2. Guárdalo en una carpeta fija (por ejemplo `Documentos\Programas`) y ábrelo.
+1. Descarga `Rebobina-windows.zip` desde [la última versión](../../releases/latest).
+2. Clic derecho › **Extraer todo**, en una carpeta fija (por ejemplo `Documentos\Programas`), y abre `Rebobina\Rebobina.exe`.
 3. La primera vez:
    - empieza a vigilar **Documentos** y **Escritorio**;
    - añade **Ver en el tiempo** al clic derecho (en Windows 11, dentro de «Mostrar más opciones»);
    - se configura para vigilar al iniciar Windows.
 
 SmartScreen puede avisar porque el programa no está firmado: «Más información › Ejecutar de todas formas».
+
+Si Microsoft Defender lo borra: **Seguridad de Windows › Protección contra virus y amenazas › Historial de protección**, elige la entrada y **Restaurar**; para que no vuelva a pasar, añade la carpeta de Rebobina en **Exclusiones**. Es un falso positivo habitual en programas sin firma digital. Para reducirlo, Rebobina se distribuye en carpeta (no como un único .exe) y con un cargador de PyInstaller compilado expresamente.
 
 Para quitar el menú y el inicio automático: `Rebobina.exe --desinstalar`. Las versiones guardadas están en `%LOCALAPPDATA%\Rebobina` y se pueden borrar a mano.
 
