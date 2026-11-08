@@ -12,6 +12,9 @@ from rebobina.vigilante import Servicio  # noqa: E402
 
 ok = 0
 
+# Las pruebas comparan bytes exactos: en Windows, escribir texto convertiría "\n" en "\r\n".
+Path.write_text = lambda self, datos, *a, **k: self.write_bytes(datos.encode("utf-8"))
+
 
 def comprobar(cond, texto):
     global ok
