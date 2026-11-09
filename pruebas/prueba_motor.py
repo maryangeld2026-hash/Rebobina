@@ -103,7 +103,8 @@ viejas3 = [v for v in despues if 2 * DIA < ahora - v["fecha"] < 5 * DIA]
 viejas10 = [v for v in despues if ahora - v["fecha"] > 9 * DIA]
 horas_distintas = len({int((ahora - 3 * DIA - i * 1800) // HORA) for i in range(48)})
 comprobar(antes == 54 and len(viejas3) == horas_distintas, f"de 1 a 7 días deja una por hora ({len(viejas3)} de 48, una por cada hora distinta)")
-comprobar(len(viejas10) == 1, "de 7 a 30 días deja una por día")
+dias_distintos = len({time.strftime("%Y-%m-%d", time.localtime(ahora - 10 * DIA - i * 600)) for i in range(5)})
+comprobar(len(viejas10) == dias_distintos, f"de 7 a 30 días deja una por día ({len(viejas10)} de 5, una por cada día distinto)")
 comprobar(despues[0]["evento"] != "borrado" and c.read_text() == m.contenido(despues[0]["hash"]).decode(), "la última versión se conserva")
 
 print("Límite de espacio")

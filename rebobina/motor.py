@@ -432,7 +432,7 @@ class Motor:
                 if edad < 7 * DIA:
                     cubo = ("h", int(f["fecha"] // HORA))
                 elif edad < 30 * DIA:
-                    cubo = ("d", int(f["fecha"] // DIA))
+                    cubo = ("d", time.strftime("%Y-%m-%d", time.localtime(f["fecha"])))  # día según la hora del PC
                 else:
                     borrar.append(f["id"])
                     continue
