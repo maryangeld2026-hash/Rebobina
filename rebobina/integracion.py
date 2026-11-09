@@ -62,14 +62,16 @@ def inicio_automatico(activar: bool):
     if not ES_WINDOWS:
         return False
     import winreg
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, CLAVE_INICIO, 0, winreg.KEY_SET_VALUE) as k:
-        if activar:
+    if activar:
+        # CreateKeyEx abre la clave o la crea si un perfil nuevo aún no la tiene.
+        with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, CLAVE_INICIO, 0, winreg.KEY_SET_VALUE) as k:
             winreg.SetValueEx(k, NOMBRE, 0, winreg.REG_SZ, f"{comando_base()} --servicio")
-        else:
-            try:
-                winreg.DeleteValue(k, NOMBRE)
-            except FileNotFoundError:
-                pass
+        return True
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, CLAVE_INICIO, 0, winreg.KEY_SET_VALUE) as k:
+            winreg.DeleteValue(k, NOMBRE)
+    except FileNotFoundError:
+        pass
     return True
 
 
@@ -77,8 +79,18 @@ def aplicar(ajustes: dict):
     """Deja el registro como dicen los ajustes."""
     if not ES_WINDOWS:
         return
-    (instalar_menu if ajustes.get("menu_contextual", True) else quitar_menu)()
-    inicio_automatico(bool(ajustes.get("inicio_automatico", True)))
+    # Cada parte por separado: si una falla, la otra se aplica igual.
+    errores = []
+    try:
+        (instalar_menu if ajustes.get("menu_contextual", True) else quitar_menu)()
+    except OSError as e:
+        errores.append(f"menú del clic derecho: {e}")
+    try:
+        inicio_automatico(bool(ajustes.get("inicio_automatico", True)))
+    except OSError as e:
+        errores.append(f"inicio automático: {e}")
+    if errores:
+        raise OSError("; ".join(errores))
 
 
 def lanzar_servicio():
