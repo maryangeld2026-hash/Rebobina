@@ -214,14 +214,16 @@ class Api:
 METODOS = {n for n in dir(Api) if not n.startswith("_")}
 
 
-def preparar_primera_vez():
+def preparar():
+    """La primera vez elige las carpetas. Siempre vuelve a registrar el clic derecho y el inicio
+    automático con la ruta de ESTE Rebobina.exe, por si se movió, se reinstaló o el anterior se borró."""
     m = Motor()
     if m.primera_vez():
         m.guardar_ajuste("carpetas", carpetas_por_defecto())
-        try:
-            integracion.aplicar(m.ajustes())
-        except Exception as e:
-            print("No se pudo configurar el registro:", e)
+    try:
+        integracion.aplicar(m.ajustes())
+    except Exception as e:
+        print("No se pudo configurar el registro:", e)
 
 
 def modo_navegador(api: Api, abrir=True, puerto=0):
@@ -278,7 +280,7 @@ def main():
         print("Se quitaron el menú del clic derecho y el inicio automático. Tus versiones siguen en", Motor().datos)
         return
     ruta = args[args.index("--ver") + 1] if "--ver" in args and args.index("--ver") + 1 < len(args) else None
-    preparar_primera_vez()
+    preparar()
     api = Api(os.path.abspath(ruta) if ruta else None)
     if "--sin-servicio" not in args:
         threading.Thread(target=api.iniciar_servicio, daemon=True).start()

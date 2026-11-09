@@ -62,6 +62,28 @@ jobs:
           Stop-Process -Id $p.Id -Force
           (Get-Item dist\Rebobina\Rebobina.exe).VersionInfo | Format-List FileDescription, ProductName, FileVersion
 
+      - name: Probar el clic derecho tal como lo usa Windows
+        shell: pwsh
+        run: |
+          $env:REBOBINA_DATOS = "$env:RUNNER_TEMP\rebobina-prueba"
+          $cmd = (Get-ItemProperty 'HKCU:\Software\Classes\Directory\shell\Rebobina\command').'(default)'
+          Write-Host "Comando registrado: $cmd"
+          if ($cmd -notmatch '^"([^"]+)"') { throw "El comando no empieza por la ruta del programa" }
+          $exe = $Matches[1]
+          if (-not (Test-Path $exe)) { throw "El comando apunta a un programa que no existe: $exe" }
+          if ((Resolve-Path $exe).Path -ne (Resolve-Path dist\Rebobina\Rebobina.exe).Path) { throw "El comando no apunta al programa recién abierto" }
+          $carpeta = "$env:RUNNER_TEMP\DECLARACION DE RENTA 2025"
+          New-Item -ItemType Directory -Force -Path $carpeta | Out-Null
+          $p = Start-Process -FilePath $exe -ArgumentList "--ver","`"$carpeta`"","--navegador","--sin-abrir","--sin-servicio","--puerto=47301" -PassThru
+          Start-Sleep -Seconds 10
+          $linea = Select-String -Path "$env:REBOBINA_DATOS\rebobina.log" -Pattern "127\.0\.0\.1:47301/\?t=(\S+)" | Select-Object -Last 1
+          if (-not $linea) { throw "No se encontró la dirección en el registro" }
+          $token = $linea.Matches[0].Groups[1].Value
+          $r = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:47301/api/inicio" -Headers @{ "X-Token" = $token } -Body "[]" -ContentType "application/json"
+          Write-Host "Rebobina recibió la ruta: $($r.ruta)"
+          if ($r.ruta -ne $carpeta) { throw "Ruta recibida incorrecta" }
+          Stop-Process -Id $p.Id -Force
+
       - name: Comprimir
         shell: pwsh
         run: |
